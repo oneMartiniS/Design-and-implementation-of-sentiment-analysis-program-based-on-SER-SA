@@ -19,8 +19,8 @@ from aliyunsdknlp_automl.request.v20191111 import RunPreTrainServiceRequest
 from ttkthemes import ThemedTk
 #API接口调用 阿里云Access Key ID与Access Key Secret
 client = AcsClient(
-  "LTAI5tGS5Q4TwDdc8LdNVgkS",
-  "lJePKSHhZBq7ouvhJxjf1LtpAFQXem",
+  "you Access Key ID",
+  "you Access Key Secret",
   "cn-hangzhou"
 )
 
