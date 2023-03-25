@@ -10,8 +10,8 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 from aliyunsdknlp_automl.request.v20191111 import RunPreTrainServiceRequest
 # Initialize AcsClient instance
 client = AcsClient( # Access-Key-Id, Access-Key-Secret, Region-ID
-  "LTAI5tGS5Q4TwDdc8LdNVgkS",
-  "lJePKSHhZBq7ouvhJxjf1LtpAFQXem",
+  "AccessKeyID",
+  "AccessKeySecret",
   "cn-hangzhou"
 );
 messages=["It has been a pleasure working with you!"] # Input text
