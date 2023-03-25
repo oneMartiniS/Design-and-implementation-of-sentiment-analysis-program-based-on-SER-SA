@@ -19,8 +19,8 @@ from aliyunsdknlp_automl.request.v20191111 import RunPreTrainServiceRequest
 from ttkthemes import ThemedTk
 # Initialize AcsClient instance
 client = AcsClient(
-  "LTAI5tGS5Q4TwDdc8LdNVgkS",
-  "lJePKSHhZBq7ouvhJxjf1LtpAFQXem",
+  "AccessKeyID",
+  "AccessKeyecret",
   "cn-hangzhou"
 )
 
