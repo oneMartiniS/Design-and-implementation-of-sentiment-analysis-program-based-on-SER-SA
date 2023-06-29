@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='SERmessage.css') }}">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主页</title>
+</head>
+
+<body>
+  <!--导航栏设计-->
+  <nav>
+    <div class="aside-nav">
+      <!--导行栏标题-->
+      <div class="nav-title">欢迎回来!</div>
+      <!--导航栏列表-->
+      <ul class="nav-list">
+        <li class="item  ">
+          <div class="parentNav">
+            <a>当前登录用户：{{ username }}</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="{{ url_for('logout') }}">退出登录</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="/profile">个人信息管理</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="/chatroom">聊天室</a>
+          </div>
+        </li>
+        {% if session['role'] == 'admin' %} <!-- 仅当角色为管理员时显示 -->
+        <li class="item">
+          <div class="parentNav">
+            <a>后台管理</a>
+          </div>
+          <ul class="subNav">
+            <li>
+              <a href="/admin">用户管理</a>
+            </li>
+            <li>
+              <a href="/SERmessage">信息管理</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      {% endif %} <!-- 结束条件语句 -->
+    </div>
+  </nav>
+
+
+  <div class="main-content">
+    <h1>信息管理与展示</h1>
+    <div class="frame1">
+      <div class="submit-btn">
+        <div>
+          <form action="{{ url_for('export_messages') }}" method="get"><button type="submit">导出聊天记录</button></form>
+        </div>
+        <div>
+          <form action="{{ url_for('analyze_messages') }}" method="post"><button type="submit">进行分析</button></form>
+        </div>
+        <div>
+          <form action="{{ url_for('export_ser_result') }}" method="GET"><button type="submit">导出分析结果</button></form>
+        </div>
+        <div>
+          <form action="{{ url_for('clear_chat_messages_route') }}" method="POST"><button type="submit">清空聊天记录</button>
+          </form>
+        </div>
+      </div>
+      <div id="tabledivs">
+        <div>
+          <h2>聊天记录显示</h2>
+          <table>
+            <tr>
+              <th>序号</th>
+              <th>用户名</th>
+              <th>聊天内容</th>
+              <th>时间</th>
+            </tr>
+            {% for message in messages %}
+            <tr>
+
+              <td>{{ message.id }}</td>
+              <td>{{ message.username }}</td>
+              <td>{{ message.content }}</td>
+              <td>{{ message.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      <div>
+        <button id="prev">上一页</button>
+        <button id="next">下一页</button>
+      </div>
+    </div>
+    <div class="frame2">
+      <h2>基于聊天室的情感分析可视化展示</h2>
+      <div>
+        <button id="visualize-btn">生成可视化</button>
+      </div>
+      <div class="sub2">
+        <div>
+          <div class="sertext"></div>
+        </div>
+      </div>
+      <div class="sub1">
+        <h1 id="h1"></h1>
+        <el-drawer>
+          <img img id="result-image" src="" alt="结果图片" class="img1">
+        </el-drawer>
+      </div>
+    </div>
+    <div class="frame2">
+      <div class="containers">
+        <div class="chart-container">
+          <h3>聊天-情感</h3>
+          <div class="ringchat">
+            <canvas class="ringchart"></canvas>
+          </div>
+        </div>
+        <div class="chart-container">
+          <h3>用户聊天-情感</h3>
+          <div id="barchart-container">
+            <canvas id="barchart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="frame3">
+
+      <div class="chart-container1">
+        <h3>用户聊天情感趋势</h3>
+        <div>
+          <label for="user-selector">选择用户：</label>
+          <select id="user-selector">
+            <!-- 这里将动态添加用户选项 -->
+          </select>
+        </div>
+        <canvas id="linechart" width="700" height="300" class="linechart custom-chart-size"></canvas>
+
+      </div>
+
+    </div>
+    <div class="frame3">
+      <div class="chart-container1">
+        <h3>词云图</h3>
+        <img id="wordcloud-image" src="" alt="词云图" />
+      </div>
+
+    </div>
+
+    <script>
+      let chart = null;
+      var items_per_page = 11;
+      var current_page = 1;
+      // 根据当前页码加载页面内容
+      function load_page(page) { // 计算当前页面的起始和结束索引
+        var start = (page - 1) * items_per_page;
+        var end = page * items_per_page;
+        $("table tr").each(function (index) {// 遍历表格的每一行（除了表头）
+          if (index === 0) return;// 忽略表头
+          $(this).hide();// 隐藏当前行
+          if (index >= start && index < end) {
+            $(this).show();// 如果当前行在起始和结束索引之间，则显示
+          }
+        });
+      }
+      // 当文档加载完成后执行以下操作
+      $(document).ready(function () {
+        load_page(current_page);// 加载当前页
+        // 为“上一页”按钮添加点击事件处理程序
+        $("#prev").click(function () {
+          if (current_page > 1) {
+            current_page--;// 减小当前页码
+            load_page(current_page);// 加载新页码的内容
+          }
+        });
+        // 为“下一页”按钮添加点击事件处理程序
+        $("#next").click(function () {
+          var total_items = $("table tr").length - 1;// 计算表格中的总项目数（减去表头）
+          var total_pages = Math.ceil(total_items / items_per_page);
+          if (current_page < total_pages) {
+            current_page++;// 增加当前页码
+            load_page(current_page);// 加载新页码的内容
+          }
+        });
+      });
+
+
+      async function generateStatsring() {
+        // 获取情感统计数据
+        const response = await fetch('/get_sentiment_counts');
+        const data = await response.json();
+
+        // 准备环形图数据
+        const sentimentCounts = [
+          data.positive_count,
+          data.neutral_count,
+          data.negative_count
+        ];
+        const labels = ['正面语句', '中立语句', '负面语句'];
+        const backgroundColors = ['rgba(255, 99, 132, 0.3)', 'rgba(255, 205, 86, 0.3)', 'rgba(75, 192, 192, 0.3)'];
+
+        // 获取canvas元素
+        const ctx = document.querySelector('.ringchart').getContext('2d');
+
+        // 创建环形图
+        const chart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                data: sentimentCounts,
+                backgroundColor: backgroundColors
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            legend: {
+              position: 'bottom'
+            }
+          }
+        });
+      }
+      async function generateStatstext() {
+        // 获取情感统计数据
+        const response = await fetch('/get_sentiment_counts');
+        const data = await response.json();
+
+        // 计算各种语句占总数的百分比
+        const total = data.total;
+        const positivePercentage = ((data.positive_count / total) * 100).toFixed(2);
+        const neutralPercentage = ((data.neutral_count / total) * 100).toFixed(2);
+        const negativePercentage = ((data.negative_count / total) * 100).toFixed(2);
+
+
+
+        // 更新sertext div的内容
+        const sertextDiv = document.querySelector('.sertext');
+        sertextDiv.innerHTML = `
+        <div class="txts">
+          
+          <img class="txtm" src="/static/images/信息.png">
+          <p class="p11"> ${total}</p>
+          <p class="p21">语句总数</p>
+        </div>
+        <div class="txts">
+          <canvas id="positive-chart" width="125" height="125" style="margin-top: 25px;"></canvas>
+          <p class="p12">${data.positive_count}</p>
+          <p class="p22">正面语句</p>
+        </div >
+        <div class="txts">
+          <canvas id="neutral-chart" width="125" height="125" style="margin-top: 25px;"></canvas>
+          <p class="p13">${data.neutral_count}</p>
+          <p class="p23">中立语句</p>
+        </div>
+        <div class="txts">
+          <canvas id="negative-chart" width="125" height="125" style="margin-top: 25px;"></canvas>
+          
+          <p class="p14">${data.negative_count}</p>
+          <p class="p24">负面语句</p>
+        </div>
+        
+    `;
+
+        let imgSrc;
+        let resultText;
+
+        if (positivePercentage > neutralPercentage && positivePercentage > negativePercentage) {
+          imgSrc = "/static/images/positive.gif";
+          resultText = "聊天室整体情感为正面";
+        } else if (negativePercentage > positivePercentage && negativePercentage > neutralPercentage) {
+          imgSrc = "/static/images/negative.gif";
+          resultText = "聊天室整体情感为负面";
+        } else if (neutralPercentage > positivePercentage && neutralPercentage > negativePercentage) {
+          imgSrc = "/static/images/neutral.gif";
+          resultText = "聊天室整体情感为中立";
+        } else {
+          imgSrc = "/static/images/neutral.gif";
+          resultText = "聊天室整体情感为中立";
+        }
+        const resultImage = document.getElementById("result-image");
+        resultImage.src = imgSrc;
+        // 添加resultText到DOM
+        const h1Element = document.getElementById("h1");
+        h1Element.textContent = resultText;
+
+        drawPercentageChart('positive-chart', positivePercentage, 'rgba(255, 99, 132, 0.9)');
+        drawPercentageChart('neutral-chart', neutralPercentage, 'rgba(255, 205, 86, 0.9)');
+        drawPercentageChart('negative-chart', negativePercentage, 'rgba(75, 192, 192, 0.9)');
+      }
+      function drawPercentageChart(canvasId, percentage, color) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+        const radius = canvas.width / 2;
+        const endAngle = 2 * Math.PI * (percentage / 100);
+
+        // 绘制仪表盘
+        ctx.beginPath();
+        ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fill();
+
+        // 绘制仪表盘(百分比)
+        ctx.beginPath();
+        ctx.arc(radius, radius, radius, -Math.PI / 2, endAngle - Math.PI / 2);
+        ctx.lineTo(radius, radius);
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        ctx.font = 'bold 18px Arial';
+        ctx.fillStyle = 'black';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        ctx.fillText(`${percentage}%`, radius, radius);
+      }
+      async function generateStatsbar() {
+        // 获取情感统计数据
+        const response = await fetch('/get_sentiment_counts_by_username');
+        const data = await response.json();
+
+        // 准备柱状图数据
+        const labels = data.map(item => item.username);
+        const positiveCounts = data.map(item => item.positive_count);
+        const neutralCounts = data.map(item => item.neutral_count);
+        const negativeCounts = data.map(item => item.negative_count);
+
+        // 获取canvas元素
+        const canvas = document.createElement('canvas');
+        canvas.style.height = '300px';
+        canvas.style.width = '300px'; // 设置画布高度为 300px
+        document.getElementById('barchart-container').innerHTML = '';
+        document.getElementById('barchart-container').appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        // 创建柱状图
+        const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: '正面语句',
+                data: positiveCounts,
+                backgroundColor: 'rgba(255, 99, 132, 0.3)'
+              },
+              {
+                label: '中立语句',
+                data: neutralCounts,
+                backgroundColor: 'rgba(255, 205, 86, 0.3)'
+              },
+              {
+                label: '负面语句',
+                data: negativeCounts,
+                backgroundColor: 'rgba(75, 192, 192, 0.3)'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            legend: {
+              position: 'bottom'
+            },
+            scales: {
+              xAxes: [{
+                stacked: false
+              }],
+              yAxes: [{
+                stacked: false,
+                ticks: {
+                  beginAtZero: true
+                }
+              }]
+            }
+          }
+        });
+      }
+      async function generateSentimentTrendsLineChart(username) {
+        // 获取情感趋势数据
+        const response = await fetch('/get_sentiment_trends');
+        const data = await response.json();
+
+        // 准备折线图数据
+        const userTrends = data[username] || [];
+        const labels = userTrends.map((_, index) => index + 1);
+
+        // 获取 canvas 元素
+        const ctx = document.getElementById('linechart').getContext('2d');
+
+
+        // 销毁先前的图表（如果存在）
+        if (chart) {
+          chart.destroy();
+        }
+
+        // 创建折线图
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: '情感趋势',
+                data: userTrends,
+                backgroundColor: 'rgba(75, 192, 192, 0.3)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            legend: {
+              position: 'bottom'
+            },
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: '数组长度'
+                }
+              },
+              y: {
+                display: true,
+                title: {
+                  display: true,
+                  text: '情感值 (-1, 2)'
+                },
+                min: -1,
+                max: 2,
+                ticks: {
+                  stepSize: 0.25,
+                  callback: function (value) {
+                    if (value % 0.25 === 0) {
+                      return value;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      async function populateUserSelector() {
+        const response = await fetch('/get_sentiment_trends');// 使用 fetch获取情感趋势数据
+        const data = await response.json(); // 将响应数据转换为 JSON 格式
+        const usernames = Object.keys(data);   // 从 JSON 数据中提取用户名（键）
+        const userSelector = document.getElementById('user-selector'); // 通过 ID 获取名为 'user-selector' 的下拉列表元素
+        // 遍历用户名数组
+        for (const username of usernames) {
+          const option = document.createElement('option');// 为每个用户名创建一个新的 option 元素
+          // 设置 option 元素的文本和值为用户名
+          option.text = username;
+          option.value = username;
+          // 将新创建的 option 元素添加到 userSelector 下拉列表中
+          userSelector.add(option);
+        }
+      }
+
+      async function generateWordcloud() {
+        const response = await fetch('/generate_wordcloud', {// 使用 fetch向服务器发送 POST 请求，以生成词云
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await response.json();// 将响应数据转换为 JSON 格式
+        const wordcloudImage = data.wordcloud_image;// 从 JSON 数据中提取词云图片数据
+        // 设置名为 'wordcloud-image' 的 img 元素的 src 属性，以显示词云图片
+        document.getElementById('wordcloud-image').src = 'data:image/png;base64,' + wordcloudImage;
+      }
+      document.addEventListener('DOMContentLoaded', function () {// 添加一个事件监听器，以便在文档加载完成后执行指定的函数
+        // 初始化用户选择器
+        populateUserSelector();
+      });
+
+      // 当用户选择器的选项发生变化时，生成新的折线图
+      document.getElementById('user-selector').addEventListener('change', function (event) {
+        const selectedUsername = event.target.value;
+        generateSentimentTrendsLineChart(selectedUsername);
+      });
+
+      document.getElementById('visualize-btn').addEventListener('click', async function () {
+        await generateStatsring();
+        await generateStatstext();
+        await generateStatsbar();
+        await generateWordcloud();
+        const userSelector = document.getElementById('user-selector');
+        const selectedUsername = userSelector.value;
+        generateSentimentTrendsLineChart(selectedUsername);
+      });
+
+
+    </script>
+
+  </div>
+  <script src="{{ url_for('static', filename='nav.js') }}"></script>
+</body>
+
+</html>

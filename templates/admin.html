@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <title>用户管理</title>
+</head>
+
+<body>
+  <!--导航栏设计-->
+  <nav>
+    <div class="aside-nav">
+      <!--导行栏标题-->
+      <div class="nav-title">欢迎回来!</div>
+      <!--导航栏列表-->
+      <ul class="nav-list">
+        <li class="item  ">
+          <div class="parentNav">
+            <a>当前登录用户：{{ username }}</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="{{ url_for('logout') }}">退出登录</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="/profile">个人信息管理</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="/chatroom">聊天室</a>
+          </div>
+        </li>
+        {% if session['role'] == 'admin' %} <!-- 仅当角色为管理员时显示 -->
+        <li class="item">
+          <div class="parentNav">
+            <a>后台管理</a>
+          </div>
+          <ul class="subNav">
+            <li>
+              <a href="/admin">用户管理</a>
+            </li>
+            <li>
+              <a href="/SERmessage">信息管理</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      {% endif %} <!-- 结束条件语句 -->
+    </div>
+  </nav>
+
+
+  <div class="main-content">
+    <h1>用户管理</h1>
+    <div class="frame1">
+      <div class="T1">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>ID</th>
+              <th>用户名</th>
+              <th>密码</th>
+              <th>邮箱</th>
+              <th>权限</th>
+              <th>修改</th>
+            </tr>
+          </thead>
+          <tbody>
+
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+
+
+
+    <script>
+      $(document).ready(function () {
+        $.ajax({
+          url: "/get_users",
+          type: "GET",
+          dataType: "json",
+          success: function (data) {
+            var tbody = $("table tbody");
+            tbody.empty();
+
+            data.forEach(function (user) {
+              var selectedAdmin = user.role === "admin" ? "selected" : "";
+              var selectedUser = user.role === "user" ? "selected" : "";
+
+              var row = `<tr>
+                <td>
+                  <div class="checkbox checkbox-primary">
+                    <input type="checkbox">
+                    <label></label>
+                  </div>
+                </td>
+                <td>${user.id}</td>
+                <td>
+                  <div class="thumb-box"> </div>
+                  <b>${user.username}</b>
+                </td>
+                <td>${user.password}</td>
+                <td>${user.email}</td>
+                <td>
+                  <select class="role-select" disabled>
+                    <option value="admin" ${selectedAdmin}>admin</option>
+                    <option value="user" ${selectedUser}>user</option>
+                  </select>
+                </td>
+                <td>
+                  <div style="width: 280px;">
+                    <button class="btn-amend" style="padding: 1px; width: 60px; height: 40px;" >修改</button>
+                    <button class="btn-save" style="padding: 1px; width: 60px; height: 40px;" >保存</button>
+                    <button class="btn-delete" style="padding: 1px; width: 60px; height: 40px;" >删除</button>
+                  </div>
+                </td>
+              </tr>`;
+              tbody.append(row);
+            });
+          },
+          error: function (error) {
+            console.log(error);
+          }
+        });
+      });
+
+      // 修改功能
+      $(document).on("click", ".btn-amend", function () {
+        var row = $(this).closest("tr");
+        row.find("td").slice(2, 6).attr("contenteditable", "true");
+        row.find("select").prop("disabled", false);
+      });
+
+      // 保存功能
+      $(document).on("click", ".btn-save", function () {
+        var row = $(this).closest("tr");
+        var id = row.find("td:eq(1)").text();
+
+        // 设置需要发送给后端的数据
+        var username = row.find("td:eq(2) b").text();
+        var password = row.find("td:eq(3)").text();
+        var email = row.find("td:eq(4)").text();
+        var role = row.find("td:eq(5) select").val();// 或者 "admin"，根据您需要更新的角色选择
+
+        $.ajax({
+          url: "/update_user",
+          type: "POST",
+          dataType: "json",
+          data: {
+            id: id,
+            username: username,
+            password: password,
+            email: email,
+            role: role,
+          },
+          success: function (response) {
+            if (response.status === "success") {
+              alert("数据已成功更新");
+              row.find("td").slice(2, 6).attr("contenteditable", "false");
+              row.find("select").prop("disabled", true);
+            } else {
+              alert("数据更新失败");
+            }
+          },
+        });
+      });
+
+
+
+      // 删除功能
+      $(document).on("click", ".btn-delete", function () {
+        var row = $(this).closest("tr");
+        var id = row.find("td:eq(1)").text();
+
+        $.ajax({
+          url: "/delete_user",
+          type: "POST",
+          dataType: "json",
+          data: { id: id },
+          success: function (response) {
+            if (response.status === "success") {
+              alert("数据已成功删除");
+              row.remove();
+            } else {
+              alert("数据删除失败");
+            }
+          },
+        });
+      });
+    </script>
+    <script src="{{ url_for('static', filename='nav.js') }}"></script>
+  </div>
+</body>
+
+</html>

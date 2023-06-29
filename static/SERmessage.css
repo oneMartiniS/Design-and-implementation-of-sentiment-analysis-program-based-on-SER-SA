@@ -1,0 +1,391 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Raleway", "PingFang SC", "Microsoft Yahei", sans-serif;
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+/*主页框架*/
+.main-content {
+  padding-left: 300px;
+
+}
+
+/*导航栏*/
+.aside-nav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 300px;
+  background-color: #222;
+  color: #fff;
+}
+
+/*导航栏标题*/
+.aside-nav .nav-title {
+  height: 100px;
+  line-height: 100px;
+  text-align: center;
+  font-size: 24px;
+  border-bottom: 1px solid #fff;
+}
+
+/*导航栏列表*/
+/*一级导航栏*/
+.bottom-nav {
+  position: absolute;
+  bottom: 30px;
+  width: 100%;
+  height: 70px;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 150px;
+
+}
+
+.bottom-nav .item {
+  width: 300px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.bottom-nav .parentNav {
+  display: block;
+}
+
+
+
+.aside-nav .nav-list .parentNav {
+  height: 70px;
+  line-height: 70px;
+  padding: 0 16px;
+  font-size: 20px;
+  cursor: pointer;
+
+}
+
+.aside-nav .nav-list .parentNav a {
+  color: #fff;
+}
+
+.aside-nav .nav-list .parentNav:hover,
+.aside-nav .nav-list .item.active.parentNav {
+  background-color: #333;
+}
+
+.aside-nav .nav-list .parentNav i {
+  font-size: 20px;
+
+}
+
+.aside-nav .nav-list .parentNav i:last-child {
+  float: right;
+}
+
+/*二级导航栏*/
+.aside-nav .nav-list .item.active .subNav {
+  display: block;
+}
+
+
+.aside-nav .nav-list .subNav {
+  display: none;
+
+}
+
+.aside-nav .nav-list .subNav li a {
+  color: #fff;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  line-height: 40px;
+  padding-left: 60px;
+}
+
+.aside-nav .nav-list .subNav li a:hover {
+  background-color: #333;
+}
+
+/*主体框架*/
+.main-content {
+  margin-left: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.h2 {
+  text-align: center;
+}
+
+h1 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: #00b894;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 10px 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+/*上下分栏*/
+.frame1 {
+  display: flex;
+  flex-direction: column;
+  width: 95%;
+
+  margin-top: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0px 0px 22px 3px rgba(0, 0, 0, 0.18);
+  background-color: #ffffffde;
+  align-items: center;
+}
+
+.frame2,
+.frame3 {
+  display: flex;
+  flex-direction: column;
+  width: 95%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+
+
+/*frame1中元素*/
+.submit-btn {
+  line-height: 10px;
+  width: 95%;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
+.submit-btn div {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+form {
+  display: flex;
+}
+
+.tabledivs {
+  margin-left: 20px;
+  margin-right: 20px;
+  top: 10px;
+  border: 1px solid #ccc;
+  width: 95%;
+}
+
+/*表格*/
+table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  margin-bottom: 20px;
+}
+
+th,
+td {
+  width: 16%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border: 1px solid #ccc;
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+
+tr:hover {
+  background-color: #e6e6e6;
+}
+
+th:nth-child(1), td:nth-child(1) {
+  width: 5%; /* 序号列的宽度 */
+}
+
+th:nth-child(3), td:nth-child(3) {
+  width: 60%; /* 聊天内容列的宽度 */
+}
+
+th:not(:nth-child(1)):not(:nth-child(3)), td:not(:nth-child(1)):not(:nth-child(3)) {
+  width: 12%; /* 其他列的宽度 */
+}
+/*frame2中元素，可视化展示框*/
+.contaiers {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr, 1fr;
+
+}
+
+.sub1 {
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.sub2 {
+  justify-content: center;
+  align-content: center;
+  width: 100%;
+  height: 200px;
+  margin-bottom: 10px;
+}
+
+.img1 {
+  height: 300px ! important;
+}
+
+.sertext {
+  justify-content: center;
+  align-content: center;
+  width: 100%;
+  display: flex;
+  height: 200px;
+
+}
+
+.txts {
+  justify-content: center ! important;
+  align-content: center ! important;
+  width: 200px;
+  height: 200px;
+  margin-right: 10px;
+  margin-left: 10px;
+  box-shadow: 0px 0px 5px 3px rgba(0, 0, 0, 0.19);
+  text-align: center;
+}
+
+.txtm {
+  width: 125px;
+  height: 125px;
+  margin-top: 25px;
+
+}
+
+.p11,
+.p21,
+.p12,
+.p22,
+.p13,
+.p23,
+.p14,
+.p24 {
+  color: rgb(3, 11, 80);
+}
+
+
+.p11,
+.p12,
+.p13,
+.p14 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.p21,
+.p22,
+.p23,
+.p24 {
+  font-size: 10px;
+  font-weight: lighter;
+
+}
+
+.resultsContainer {
+  margin: 50px 0;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  margin-left: 100px;
+  width: 200px;
+  height: 80px;
+  display: inline-block;
+  position: relative;
+}
+
+.chart-container {
+  box-shadow: 0px 0px 5px 3px rgba(0, 0, 0, 0.19);
+  text-align: center;
+  margin: 10px;
+  display: inline-block;
+  vertical-align: top;
+  width: 400px;
+  height: 100%;
+  display: inline-block;
+  position: relative;
+}
+
+.chart-container1 {
+  justify-content: center ! important;
+  align-content: center ! important;
+  box-shadow: 0px 0px 5px 3px rgba(0, 0, 0, 0.19);
+  text-align: center;
+  margin: 50px 0;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  display: inline-block;
+  vertical-align: top;
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+}
+
+.iq-header-title {
+  display: inline-block;
+  align-self: center !important;
+}
+
+.linechart {
+  display: block;
+  box-sizing: border-box;
+  max-width: 800px; /* 您可以根据需要调整宽度 */
+  max-height: 400px; /* 您可以根据需要调整高度 */
+  margin: 0 auto;
+}
+
+.custom-chart-size {
+  width: 800px; /* 您可以根据需要调整宽度 */
+  height: 400px; /* 您可以根据需要调整高度 */
+}
+
+

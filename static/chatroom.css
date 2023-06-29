@@ -1,0 +1,217 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Raleway", "PingFang SC", "Microsoft Yahei", sans-serif;
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+/*主页框架*/
+.main-content {
+  padding-left: 10px;
+
+}
+
+/*导航栏*/
+.aside-nav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 300px;
+  background-color: #222;
+  color: #fff;
+}
+
+/*导航栏标题*/
+.aside-nav .nav-title {
+  height: 100px;
+  line-height: 100px;
+  text-align: center;
+  font-size: 24px;
+  border-bottom: 1px solid #fff;
+}
+
+/*导航栏列表*/
+/*一级导航栏*/
+.bottom-nav {
+  position: absolute;
+  bottom: 30px;
+  width: 100%;
+  height: 70px;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 150px;
+
+}
+
+.bottom-nav .item {
+  width: 300px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.bottom-nav .parentNav {
+  display: block;
+}
+
+
+
+.aside-nav .nav-list .parentNav {
+  height: 70px;
+  line-height: 70px;
+  padding: 0 16px;
+  font-size: 20px;
+  cursor: pointer;
+
+}
+
+.aside-nav .nav-list .parentNav a {
+  color: #fff;
+}
+
+.aside-nav .nav-list .parentNav:hover,
+.aside-nav .nav-list .item.active.parentNav {
+  background-color: #333;
+}
+
+.aside-nav .nav-list .parentNav i {
+  font-size: 20px;
+
+}
+
+.aside-nav .nav-list .parentNav i:last-child {
+  float: right;
+}
+
+/*二级导航栏*/
+.aside-nav .nav-list .item.active .subNav {
+  display: block;
+}
+
+
+.aside-nav .nav-list .subNav {
+  display: none;
+
+}
+
+.aside-nav .nav-list .subNav li a {
+  color: #fff;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  line-height: 40px;
+  padding-left: 60px;
+}
+
+.aside-nav .nav-list .subNav li a:hover {
+  background-color: #333;
+}
+
+/*聊天室，消息框，发送按钮，消息输入框*/
+.main-content {
+  margin-left: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+}
+
+
+.container {
+  margin-left: 300px;
+  max-width: 800px;
+  margin: 40px auto;
+}
+
+.chat-box {
+  width: 100%;
+  height: 800px;
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.chat-box .text-left,
+.chat-box .text-right {
+  width: 100%;
+  display: inline-block;
+  clear: both;
+}
+
+.chat-box .text-left p,
+.chat-box .text-right p {
+  max-width: 70%;
+  word-wrap: break-word;
+  margin: 0;
+}
+.chat-from {
+  width:100%;
+}
+
+.form-group {
+  width:85%;
+}
+.chat-box .text-left p {
+  float: left;
+  background-color: #dfe7f0;
+  padding: 10px;
+  border-radius: 8px;
+  border-bottom-right-radius: 0;
+  margin-bottom: 15px;
+}
+
+.chat-box .text-right p {
+  float: right;
+  background-color: #00b894;
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  border-bottom-left-radius: 0;
+  margin-bottom: 15px;
+}
+
+.chat-box .text-left p:first-child,
+.chat-box .text-right p:first-child {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.btn-primary {
+  color: #fff;
+  background-color: #00b894;
+  border-color: #00b894;
+}
+
+.btn-primary:hover {
+  color: #fff;
+  background-color: #00b894;
+  border-color: #00b894;
+}
+
+.col-md-12 {
+  width: 100%;
+}
+.form-inline {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 1px 1px;
+}
+
+.form-inline .form-control {
+  width: 100%;
+  margin-right: 1%;
+}
+
+.form-inline button {
+  border-radius: 15px;
+  width: 15%; /* 更改为百分比宽度 */
+}

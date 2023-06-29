@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatroom.css') }}">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聊天室</title>
+</head>
+
+<body>
+  <!--导航栏设计-->
+  <nav>
+    <div class="aside-nav">
+      <!--导行栏标题-->
+      <div class="nav-title">欢迎回来!</div>
+      <!--导航栏列表-->
+      <ul class="nav-list">
+        <li class="item  ">
+          <div class="parentNav">
+            <a>当前登录用户：{{ username }}</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="{{ url_for('logout') }}">退出登录</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="/profile">个人信息管理</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="/chatroom">聊天室</a>
+          </div>
+        </li>
+        {% if session['role'] == 'admin' %} <!-- 仅当角色为管理员时显示 -->
+        <li class="item">
+          <div class="parentNav">
+            <a>后台管理</a>
+          </div>
+          <ul class="subNav">
+            <li>
+              <a href="/admin">用户管理</a>
+            </li>
+            <li>
+              <a href="/SERmessage">信息管理</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      {% endif %} <!-- 结束条件语句 -->
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div id="chat-box" class="chat-box">
+            <!-- 聊天记录将在这里显示 -->
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <form id="chat-form" class="form-inline">
+            <div class="form-group">
+              <input type="text" class="form-control" id="message-input" placeholder="输入消息" required>
+            </div>
+            <button type="submit" class="btn btn-primary">发送</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let latestMessageTimestamp = '';
+
+    $(document).ready(function () {
+      const socket = io.connect('http://' + document.domain + ':' + location.port);// 建立 Socket.IO 连接
+      const username = "{{ session['username'] }}";// 获取当前用户名
+
+      function refreshData() {// 刷新数据的函数，用于从服务器端获取聊天消息
+        socket.emit('get_messages', { room: 'chatroom' });
+      }
+
+      // 初始加载历史消息
+      refreshData();
+
+      
+      // 每隔1秒（1000毫秒）自动刷新数据
+      setInterval(refreshData, 1000);
+      // 绑定聊天表单的提交事件
+      $('#chat-form').on('submit', function (e) {
+        e.preventDefault();// 阻止默认提交行为
+        const messageContent = $('#message-input').val();// 获取输入的消息内容
+        socket.emit('message', {
+          content: messageContent,
+          room: 'chatroom'
+        });// 将消息发送到服务器
+        $('#message-input').val('');// 清空输入框
+      });
+      // 监听服务器发来的消息事件
+      socket.on('message', function (data) {
+        if (data.timestamp > latestMessageTimestamp) {// 如果收到的消息比最新的消息时间戳还要晚，就更新最新消息时间戳并显示该消息
+          latestMessageTimestamp = data.timestamp;
+
+          let chatBubbleClass = data.username === username ? "text-right" : "text-left";
+          let messageHtml = `
+      <div class="message-row ${chatBubbleClass}">
+        <div class="message-bubble">
+          <div class="message-info">
+            <span class="username">${data.username}</span>
+            <span class="timestamp">(${data.timestamp})</span>
+          </div>
+          <p>${data.content}</p>
+        </div>
+      </div>
+    `;
+        // 将新消息添加到聊天框中并滚动到底部
+          $('#chat-box').append(messageHtml);
+          $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+        }
+      });
+
+      // 监听服务器发来的历史消息事件
+      socket.on('history', function (data) {
+        if (data.timestamp > latestMessageTimestamp) {// 如果收到的历史消息比最新的消息时间戳还要晚，就更新最新消息时间戳并显示该消息
+          latestMessageTimestamp = data.timestamp;
+          // 根据消息发送者确定聊天气泡的位置
+          let chatBubbleClass = data.username === username ? "text-right" : "text-left";
+          let messageHtml = `
+      <div class="message-row ${chatBubbleClass}">
+        <div class="message-bubble">
+          <div class="message-info">
+            <span class="username">${data.username}</span>
+            <span class="timestamp">(${data.timestamp})</span>
+          </div>
+          <p>${data.content}</p>
+        </div>
+      </div>
+    `;
+        // 将新消息添加到聊天框中并滚动到底部
+          $('#chat-box').append(messageHtml);
+          $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+        }
+      });
+       // 监听服务器发来的警告事件（例如用户加入或离开聊天室）
+      socket.on('alert', function (data) {// 创建包含警告信息的HTML结构
+        let messageHtml = `
+      <div class="text-center">
+        <p><em>${data.alert}</em></p>
+      </div>
+    `;// 将警告消息添加到聊天框中并滚动到底部
+        $('#chat-box').append(messageHtml);
+        $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+      });
+    });
+  </script>
+  <script src="{{ url_for('static', filename='nav.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,58 @@
+请求参数
+名称         类型    是否必选        示例值        描述
+
+Action      String    是        GetSaChGeneral    系统规定参数，取值：GetSaChGeneral
+
+ServiceCode String    是        alinlp            固定值，只支持alinlp
+
+Text        String    是        服务很好           要分析的句子内容，长度不超过1000字
+这是阿里云官方的SDK示例
+import json
+from aliyunsdkcore.client import AcsClient
+from aliyunsdkcore.request import CommonRequest
+# 创建AcsClient实例
+client = AcsClient(
+    "<your-access-id-key>",
+    "<your-access-id-secret>",
+    "cn-hangzhou"
+)
+request = CommonRequest()
+# domain和version是固定值
+request.set_domain('alinlp.cn-hangzhou.aliyuncs.com')
+request.set_version('2020-06-29')
+# action name可以在API文档里查到
+request.set_action_name('GetWsCustomizedChGeneral')
+# 需要add哪些param可以在API文档里查到
+request.add_query_param('ServiceCode', 'alinlp')
+request.add_query_param('Text', '云麦好轻智能体脂秤精准蓝牙秤体重测人体脂肪秤家用称健康电子秤')
+request.add_query_param('TokenizerId', 'GENERAL_CHN')
+response = client.do_action_with_exception(request)
+resp_obj = json.loads(response)
+print(resp_obj)
+
+host="localhost"
+数据库名chatroom
+登录表（login）：
+id（主键）：INT，自增长
+用户名（username）：VARCHAR，唯一
+密码（password）：VARCHAR
+邮箱（email）：VARCHAR，唯一
+角色（role）：ENUM('user', 'admin')
+个人信息表（user_profiles）：
+id（主键）：INT，自增长
+登录ID（login_id）：INT，外键，关联login.id
+性别（gender）：ENUM('male', 'female', 'other')
+头像（avatar）：VARCHAR
+个人介绍（introduction）：TEXT
+聊天记录表（chat_messages）：
+id（主键）：INT，自增长
+用户ID（login_id）：INT，外键，关联login.id
+消息内容（content）：TEXT
+发送时间（timestamp）：DATETIME
+情感分析结果表（sentiment_analysis）：
+id（主键）：INT，自增长
+聊天记录ID（chat_message_id）：INT，外键，关联chat_messages.id
+情感（sentiment）：ENUM('positive', 'neutral', 'negative')
+正面概率（positive_prob）：FLOAT
+中性概率（neutral_prob）：FLOAT
+负面概率（negative_prob）：FLOAT

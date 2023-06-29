@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人信息管理</title>
+</head>
+
+<body>
+  <!--导航栏设计-->
+  <nav>
+    <div class="aside-nav">
+      <!--导行栏标题-->
+      <div class="nav-title">欢迎回来{{ username }}!</div>
+      <!--导航栏列表-->
+      <ul class="nav-list">
+        <li class="item  ">
+          <div class="parentNav">
+            <a>当前登录用户：{{ username }}</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="{{ url_for('logout') }}">退出登录</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="/profile">个人信息管理</a>
+          </div>
+        </li>
+        <li class="item ">
+          <div class="parentNav">
+            <a href="/chatroom">聊天室</a>
+          </div>
+        </li>
+        {% if session['role'] == 'admin' %} <!-- 仅当角色为管理员时显示 -->
+        <li class="item">
+          <div class="parentNav">
+            <a>后台管理</a>
+          </div>
+          <ul class="subNav">
+            <li>
+              <a href="/admin">用户管理</a>
+            </li>
+            <li>
+              <a href="/SERmessage">信息管理</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      {% endif %} <!-- 结束条件语句 -->
+    </div>
+  </nav>
+  <div class="main-content">
+    <h1>个人信息页</h1>
+    <div class="frame1">
+      <div class="wrapper">
+        <!-- 头像 -->
+        <div class="profile-image">
+          <div class="img-div">
+            {% if user_info.avatar %}
+            <img id="avatar" src="{{ url_for('send_image', path=user_info.avatar) }}"
+              style="border-radius: 200px;"></img>
+            {% else %}
+            <img id="avatar" src="/static/images/个人.gif" style="border-radius: 200px;"></img>
+            {% endif %}
+          </div>
+        </div>
+        <!-- 个人卡片 -->
+        <div class="profile-card">
+          <!-- 卡片内容，导航，个人简介和工作经历 -->
+          <div class="content">
+            <!-- 导航 -->
+            <div id="nav-menu">
+              <!-- data-rel，在js里获取当前要展示哪个section，是个人简介还是工作经历 -->
+              <h2>个人简介</h2>
+            </div>
+            <!-- 关于我部分 -->
+
+            <!-- 名字和身份信息 -->
+            <div class="personal-info">
+              <div class="title">
+                <h3>用户名：{{ user_info.username }}</h3>
+              </div>
+              <div class="title">
+                <p>性别：{{ user_info.gender }}</p>
+              </div>
+              <div class="title">
+                <p>邮箱: {{ user_info.emil }}</p>
+              </div>
+            </div>
+            <!-- 个人简介的内容 -->
+            <div class="about-me">
+              {% if user_info.introduction %}
+              <p>
+                {{ user_info.introduction }}
+              </p>
+              {% else %}
+              <P>
+                这个人很懒，什么都没有留下
+              </P>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="frame2">
+      <form action="/update_profile" method="post" enctype="multipart/form-data">
+
+        <div class="geton">
+          <div>
+            <h4>资料编辑</h4>
+          </div>
+        </div>
+        <div class="below">
+          <div class="left1">
+
+            <div>
+              <h5>性别</h5>
+              <fieldset class="form-group">
+                <select class="form-control" name="gender">
+                  <option value="other" {{ 'selected' if user_info['gender']=='other' }}>other</option>
+                  <option value="female" {{ 'selected' if user_info['gender']=='female' }}>female</option>
+                  <option value="male" {{ 'selected' if user_info['gender']=='male' }}>male</option>
+                </select>
+              </fieldset>
+            </div>
+            <div>
+              <h5>邮箱</h5>
+              <fieldset class="form-group">
+                <input class="form-control" name="email" value="{{ user_info['email'] }}">
+              </fieldset>
+            </div>
+            <div>
+              <h5>个性签名</h5>
+              <fieldset class="form-group">
+                <textarea class="form-control" name="introduction">{{ user_info['introduction'] }}</textarea>
+              </fieldset>
+            </div>
+          </div>
+          <div class="right1">
+            <a><i>更换头像</i> </a>
+            {% if user_info.avatar %}
+            <img id="avatar" src="{{ url_for('send_image', path=user_info.avatar) }}"
+              style="border-radius: 200px;"></img>
+            {% else %}
+            <img id="avatar" src="/static/images/个人.gif" style="border-radius: 200px;"></img>
+            {% endif %}
+            <div>
+              <input type="file" name="avatar" id="file-upload">
+              <label for="file-upload" id="file-upload-label">上传文件</label>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="bntbelow">
+      <button class="button">保存</button>
+    </div>
+
+    </form>
+  </div>
+  </div>
+  <script>
+    document.getElementById('file-upload').addEventListener('change', function (event) {
+      const fileName = event.target.files[0] ? event.target.files[0].name : '上传文件';
+      document.getElementById('file-upload-label').textContent = fileName;
+    });
+  </script>
+  <script src="{{ url_for('static', filename='nav.js') }}"></script>
+</body>
+
+</html>
